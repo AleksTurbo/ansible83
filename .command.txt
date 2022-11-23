@@ -1,14 +1,18 @@
 ansible-playbook -i ./inventory/prod.yml site.yml --check
+ansible-playbook -i ./inventory/prod.yml vector.yml
 cockpit
 systemctl enable --now cockpit.socket
 ssh-copy-id aleksturbo@192.168.153.118
 /home/aleksturbo/.ssh/id_rsa.pub
 ssh 'aleksturbo@192.168.153.118'
 systemctl status clickhouse-server
+systemctl status vector.service
+/usr/bin/vector --config-yaml /home/aleksturbo/vector_config/vector.yml --watch-config
+sudo /usr/bin/vector --config-yaml /home/aleksturbo/vector_config/vector.yml --watch-config
 sudo -u clickhouse /usr/bin/clickhouse-server --config-file=/etc/clickhouse-server/config.xml
 
 sudo /etc/init.d/clickhouse-server start
-clickhouse-client # or "clickhouse-client --password" if you set up a password.
+
 
 
 # Uninstall and delete installation files (root permission required)
@@ -22,3 +26,24 @@ rm -rf /etc/clickhouse-*
 rm -rf /var/log/clickhouse-server
 rm -rf /var/log/clickhouse-server
 sudo rpm -e clickhouse-server.x86_64 --noscripts
+
+wget https://packages.clickhouse.com/rpm/stable/ .noarch.rpm
+sudo yum install -y clickhouse-server clickhouse-client
+
+(1/3): clickhouse-client-22.11.1.1360.x86_64.rpm                                                                                                             169 kB/s | 112 kB     00:00    
+(2/3): clickhouse-server-22.11.1.1360.x86_64.rpm                                                                                                             177 kB/s | 137 kB     00:00    
+(3/3): clickhouse-common-static-22.11.1.1360.x86_64.rpm  
+
+sudo /etc/init.d/clickhouse-server start
+
+
+clickhouse-client # or "clickhouse-client --password" if you set up a password.
+select * from logs
+SHOW DATABASES LIKE '%logs%'
+CREATE DATABASE db_logs COMMENT 'logs';
+USE logs
+CREATE TABLE tbl_logs ("file" String, "hosts" String,"message" String,"timestamp" DateTime) ENGINE = Log;
+SELECT * FROM tbl_logs;
+CREATE DATABASE db_comment2 ENGINE = Memory COMMENT 'The temporary database';
+SELECT * FROM system.databases WHERE name = 'logs';
+CREATE TABLE logs (id int, name String) ENGINE = Log AS SELECT 1;
