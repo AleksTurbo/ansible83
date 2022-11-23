@@ -1,0 +1,17 @@
+sources:
+  simple_file:
+    type: file
+    read_from: beginning
+    ignore_older_secs: 600
+    include:
+      - /home/aleksturbo/logs/*.log
+
+sinks:
+  to_clickhouse:
+    type: clickhouse
+    inputs:
+      - simple_file
+    database: db_logs
+    endpoint: http://192.168.153.118:8123
+    table: tbl_logs
+    compression: gzip
