@@ -1,0 +1,23 @@
+ansible-playbook -i ./inventory/prod.yml site.yml --check
+cockpit
+systemctl enable --now cockpit.socket
+ssh-copy-id aleksturbo@192.168.153.118
+/home/aleksturbo/.ssh/id_rsa.pub
+ssh 'aleksturbo@192.168.153.118'
+systemctl status clickhouse-server
+
+sudo /etc/init.d/clickhouse-server start
+clickhouse-client # or "clickhouse-client --password" if you set up a password.
+
+
+# Uninstall and delete installation files (root permission required)
+yum list installed | grep clickhouse
+
+sudo /etc/init.d/clickhouse-server stop
+yum remove -y clickhouse-common-static
+yum remove -y clickhouse-server-common
+rm -rf /var/lib/clickhouse
+rm -rf /etc/clickhouse-*
+rm -rf /var/log/clickhouse-server
+rm -rf /var/log/clickhouse-server
+sudo rpm -e clickhouse-server.x86_64 --noscripts
