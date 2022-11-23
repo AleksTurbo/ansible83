@@ -5,6 +5,7 @@ ssh-copy-id aleksturbo@192.168.153.118
 /home/aleksturbo/.ssh/id_rsa.pub
 ssh 'aleksturbo@192.168.153.118'
 systemctl status clickhouse-server
+sudo -u clickhouse /usr/bin/clickhouse-server --config-file=/etc/clickhouse-server/config.xml
 
 sudo /etc/init.d/clickhouse-server start
 clickhouse-client # or "clickhouse-client --password" if you set up a password.
