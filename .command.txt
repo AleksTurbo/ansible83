@@ -47,3 +47,13 @@ SELECT * FROM tbl_logs;
 CREATE DATABASE db_comment2 ENGINE = Memory COMMENT 'The temporary database';
 SELECT * FROM system.databases WHERE name = 'logs';
 CREATE TABLE logs (id int, name String) ENGINE = Log AS SELECT 1;
+
+systemctl status nginx
+systemctl start nginx
+nginx -t
+
+chkconfig nginx on
+firewall-cmd --zone=public --permanent --add-service=http
+firewall-cmd --zone=public --permanent --add-service=https
+firewall-cmd --reload
+sudo lsof -i -P | grep -i "listen"
