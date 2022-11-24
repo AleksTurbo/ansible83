@@ -1,0 +1,8 @@
+---
+nginx_user_name: nginx
+lighthouse vcs:
+nginx_user: nginx
+lighthouse_git: https://github.com/VKCOM/lighthouse.git
+lighthouse_access_log_name: lighthouse_access
+lighthouse_home_dir: /opt/lighthouse
+lighthouse_location_dir: /opt/lighthouse

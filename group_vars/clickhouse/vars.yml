@@ -1,6 +1,9 @@
 ---
 clickhouse_version: "22.3.3.44"
+clickhouse_database_name: logs
+clickhouse_table_name: tbl_logs
 clickhouse_packages:
   - clickhouse-client
   - clickhouse-server
+clickhouse_packages_cmn:
   - clickhouse-common-static

@@ -1,32 +1,70 @@
 ---
+- name: Drop exist database Clickhouse
+  hosts: clickhouse
+  tasks:
+    - name: Drop exist clickhouse database
+      ansible.builtin.command:
+        argv:
+          - clickhouse-client
+          - -q
+          - drop database {{ clickhouse_database_name }};
+      register: drop_table
+      failed_when: drop_table.rc != 0 and drop_table.rc !=81 # db doesn't exist
+      changed_when: drop_table.rc == 0
 - name: Install Nginx
   hosts: lighthouse
   handlers:
-  - name: start-nginx
-    become: true
-    command: nginx
-  - name: reload-nginx
-    become: true
-    command: nginx -s reload
+    - name: start-nginx
+      become: true
+      command: nginx
+    - name: reload-nginx
+      become: true
+      command: nginx -s reload
   tasks:
-  - name: NGINX | Install epel-release
-    become: true
-    ansible.builtin.yum:
-      name: epel-release
-      state: present
-  - name: NGINX | Install NGINX
-    become: true
-    ansible.builtin.yum:
-      name: nginx
-      state: present
-    notify: start-nginx
-  - name: NGINX | Create general config 
-    become: true
-    template:
-      src: templates/nginx.conf.j2
-      dest: /etc/nginx/nginx.conf
-      mode: 0644
-  notify: reload-nginx
+    - name: NGINX | Install epel-release
+      become: true
+      ansible.builtin.yum:
+        name: epel-release
+        state: present
+    - name: NGINX | Install NGINX
+      become: true
+      ansible.builtin.yum:
+        name: nginx
+        state: present
+      notify: start-nginx
+    - name: NGINX | Create general config 
+      become: true
+      template:
+        src: templates/nginx.conf.j2
+        dest: /etc/nginx/nginx.conf
+        mode: 0644
+      notify: reload-nginx
+- name: Install lighthouse
+  hosts: lighthouse
+  handlers:
+    - name: reload-nginx
+      become: true
+      command: nginx -s reload
+  pre_tasks:
+    - name: Lighthouse | install dependencies
+      become: true
+      ansible.builtin.yum:
+        name: git
+        state: present
+  tasks:
+    - name: Lighthouse | Copy from git
+      become: true
+      git:
+        repo: "{{ lighthouse_git }}"
+        version: master
+        dest: "{{ lighthouse_location_dir }}"
+    - name: Lighthouse | Create lighthouse config
+      become: true
+      template:
+        src: lighthouse.conf.j2
+        dest: /etc/nginx/conf.d/default.conf
+        mode: 0644
+      notify: reload-nginx
 - name: Install Clickhouse
   hosts: clickhouse
   handlers:
@@ -48,6 +86,7 @@
         ansible.builtin.get_url:
           url: "https://packages.clickhouse.com/rpm/stable/clickhouse-common-static-{{ clickhouse_version }}.x86_64.rpm"
           dest: "./clickhouse-common-static-{{ clickhouse_version }}.rpm"
+        with_items: "{{ clickhouse_packages_cmn }}"
         check_mode: false
     - name: Install clickhouse packages
       become: true
@@ -60,11 +99,31 @@
       notify: Start clickhouse service
     - name: Flush handlers
       ansible.builtin.meta: flush_handlers
-    - name: Create database
+    - name: Clickhouse | Create database
+      tags: clickhouse_db
       ansible.builtin.command: "clickhouse-client -q 'create database logs;'"
       register: create_db 
       failed_when: create_db.rc != 0 and create_db.rc !=82 
       changed_when: create_db.rc == 0
+    - name: Clickhouse | Create log table
+      tags: clickhouse_db
+      ansible.builtin.command:
+        argv:
+          - clickhouse-client
+          - --database
+          - "{{ clickhouse_database_name }}"
+          - -q
+          - "{{ clickhouse_table_name }}" # - 'CREATE TABLE IF NOT EXISTS  logs.access_logs ( message String ) ENGINE = MergeTree() ORDER BY tuple()'
+      register: create_table
+      failed_when: create_table.rc != 0 and create_table.rc !=57 # table already exists
+      changed_when: create_table.rc == 0
+    - name: Clickhouse | Config
+      become: true
+      ansible.builtin.template:
+        src: templates/clickhouse.xml.j2
+        dest: /etc/clickhouse-server/config.xml
+        mode: 0644
+      notify: Start clickhouse service
 - name: Install Vector
   hosts: vector
   tasks:
@@ -103,8 +162,3 @@
         name: vector
         state: started
         daemon_reload: true
-- name: Install lighthouse
-  hosts: lighthouse
-  tasks:
-    - debug:
-        msg: "Install lighthouse"
