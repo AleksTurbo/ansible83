@@ -43,6 +43,11 @@ SHOW DATABASES LIKE '%logs%'
 CREATE DATABASE db_logs COMMENT 'logs';
 USE logs
 CREATE TABLE tbl_logs ("file" String, "hosts" String,"message" String,"timestamp" DateTime) ENGINE = Log;
+"{{ clickhouse_table_name }}"  - 'CREATE TABLE IF NOT EXISTS  logs.access_logs ( message String ) ENGINE = Log ;'
+clickhouse-client -q 'CREATE TABLE IF NOT EXISTS  logs.tbl_logs ( message String ) ENGINE = Log ;'
+clickhouse-client -q 'SELECT * FROM logs.tbl_logs;'
+clickhouse-client --database logs -q 'CREATE TABLE IF NOT EXISTS  tbl_logs (id int, name String) ENGINE = Log'
+clickhouse-client --database logs -q 'CREATE TABLE IF NOT EXISTS  tbl_logs ("file" String, "hostname" String, "message" String, "timestamp" DateTime) ENGINE = Log'
 SELECT * FROM tbl_logs;
 CREATE DATABASE db_comment2 ENGINE = Memory COMMENT 'The temporary database';
 SELECT * FROM system.databases WHERE name = 'logs';

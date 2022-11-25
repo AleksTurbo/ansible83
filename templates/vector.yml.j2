@@ -2,7 +2,7 @@ sources:
   simple_file:
     type: file
     read_from: beginning
-    ignore_older_secs: 600
+    ignore_older_secs: 3600
     include:
       - /home/aleksturbo/logs/*.log
 
@@ -15,3 +15,4 @@ sinks:
     endpoint: http://192.168.153.118:8123
     table: tbl_logs
     compression: gzip
+    skip_unknown_fields: true

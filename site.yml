@@ -99,6 +99,16 @@
       notify: Start clickhouse service
     - name: Flush handlers
       ansible.builtin.meta: flush_handlers
+    - name: Clickhouse | Config
+      become: true
+      ansible.builtin.template:
+        src: templates/clickhouse.xml.j2
+        dest: /etc/clickhouse-server/config.xml
+        mode: 0644
+      notify: Start clickhouse service
+    - name: pause for 10 second(s)
+      ansible.builtin.pause:
+        seconds: 10
     - name: Clickhouse | Create database
       tags: clickhouse_db
       ansible.builtin.command: "clickhouse-client -q 'create database logs;'"
@@ -113,17 +123,11 @@
           - --database
           - "{{ clickhouse_database_name }}"
           - -q
-          - "{{ clickhouse_table_name }}" # - 'CREATE TABLE IF NOT EXISTS  logs.access_logs ( message String ) ENGINE = MergeTree() ORDER BY tuple()'
+          - "CREATE TABLE IF NOT EXISTS  {{ clickhouse_table_name }} (timestamp String, file String, host String, message String, source_type String) ENGINE = Log;"
       register: create_table
-      failed_when: create_table.rc != 0 and create_table.rc !=57 # table already exists
+      failed_when: create_table.rc != 0 and create_table.rc !=57
       changed_when: create_table.rc == 0
-    - name: Clickhouse | Config
-      become: true
-      ansible.builtin.template:
-        src: templates/clickhouse.xml.j2
-        dest: /etc/clickhouse-server/config.xml
-        mode: 0644
-      notify: Start clickhouse service
+
 - name: Install Vector
   hosts: vector
   tasks:
