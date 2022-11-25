@@ -1,0 +1,40 @@
+aws s3api create-bucket --endpoint-url https://storage.yandexcloud.net --bucket aleksturbo --region ru-central1-a --object-ownership BucketOwnerEnforced --create-bucket-configuration LocationConstraint=ru-central1-a
+
+
+aws s3 ls --endpoint-url https://storage.yandexcloud.net
+
+aws --endpoint-url https://storage.yandexcloud.net dynamodb create-table --table-name terraform_state --attribute-definitions AttributeName=LockID,AttributeType=S --key-schema AttributeName=LockID,KeyType=HASH --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5
+
+ydb -e grpcs://ydb.serverless.yandexcloud.net:2135 --yc-token-file ~/my_token -d /ru-central1/b1gk0tcpmdt9lhdnsjrl/etnrj1t4j8ltu3lf797c scheme ls -l
+
+ydb -e grpcs://ydb.serverless.yandexcloud.net:2135 --yc-token-file ~/my_token -d /ru-central1/b1gk0tcpmdt9lhdnsjrl/etnrj1t4j8ltu3lf797c scripting yql -s 'CREATE TABLE terraform_state (series_id Uint64, title Utf8, PRIMARY KEY (series_id));'
+
+terraform workspace new stage
+terraform workspace new prod
+terraform workspace list
+terraform workspace show
+terraform workspace select stage
+terraform workspace select prod
+
+terraform plan
+
+terraform apply
+terraform destroy
+
+yc compute image list --folder-id standard-images
+
+terraform validate
+terraform fmt
+
+output "internal_ip_address_vm_${local.web_instance_count_map[terraform.workspace]}" {
+  value = yandex_compute_instance.vm${local.web_instance_count_map[terraform.workspace]}.network_interface.0.ip_address
+}
+
+output "external_ip_address_vm${local.web_instance_count_map[terraform.workspace]}" {
+  value = yandex_compute_instance.vm${local.web_instance_count_map[terraform.workspace]}.network_interface.0.nat_ip_address
+}
+
+  labels = {
+    Name = "Workspace-${terraform.workspace}"
+    node = "Server-0${count.index}"
+  }
