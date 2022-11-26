@@ -5,5 +5,7 @@ clickhouse_table_name: tbl_logs
 clickhouse_packages:
   - clickhouse-client
   - clickhouse-server
+  - clickhouse-common-static
 clickhouse_packages_cmn:
   - clickhouse-common-static
+clickhouse_host: 158.160.41.130

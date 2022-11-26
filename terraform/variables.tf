@@ -23,10 +23,6 @@ variable "metadata_file" {
   description = "Metadata file for ssh"
 }
 
-variable "sa_id" {
-  description = "SERVICE ACCOUNT ID"
-}
-
 variable "login" {
   default = "ansible"
 }
