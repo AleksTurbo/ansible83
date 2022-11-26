@@ -17,6 +17,9 @@ terraform workspace select stage
 terraform workspace select prod
 
 terraform plan
+terraform init -reconfigure
+terraform init -upgrade
+echo 'source /home/aleksturbo/yandex-cloud/completion.zsh.inc' >>  ~/.zshrc
 
 terraform apply
 terraform destroy
@@ -38,3 +41,20 @@ output "external_ip_address_vm${local.web_instance_count_map[terraform.workspace
     Name = "Workspace-${terraform.workspace}"
     node = "Server-0${count.index}"
   }
+
+export YC_TOKEN=$(yc iam create-token)
+export YC_CLOUD_ID=$(yc config get cloud-id)
+export YC_FOLDER_ID=$(yc config get folder-id)
+
+yc compute image list --folder-id standard-images
+
+ssh 158.160.46.222
+ssh cloud-user@158.160.46.222
+ssh cloud-user@158.160.44.255
+ssh cloud-user@158.160.45.145
+
+"clickhouse" = tolist([    "158.160.45.145",
+  ])
+  "lighthouse" = tolist([    "158.160.44.255",
+  ])
+  "vector" = tolist([    "158.160.46.222",
