@@ -1,18 +1,22 @@
 ansible-playbook -i ./inventory/prod.yml site.yml --check
+ansible-playbook -i ./inventory/prod.yml site.yml --diff
 ansible-playbook -i ./inventory/prod.yml vector.yml
+ansible-playbook -i ./inventory/prod.yml clickhouse.yml
+
 cockpit
 systemctl enable --now cockpit.socket
 ssh-copy-id aleksturbo@192.168.153.118
 /home/aleksturbo/.ssh/id_rsa.pub
 ssh 'aleksturbo@192.168.153.118'
 systemctl status clickhouse-server
+systemctl start clickhouse-server
 systemctl status vector.service
 /usr/bin/vector --config-yaml /home/aleksturbo/vector_config/vector.yml --watch-config
 sudo /usr/bin/vector --config-yaml /home/aleksturbo/vector_config/vector.yml --watch-config
 sudo -u clickhouse /usr/bin/clickhouse-server --config-file=/etc/clickhouse-server/config.xml
 
 sudo /etc/init.d/clickhouse-server start
-
+sudo lsof -i -P | grep -i "listen"
 
 
 # Uninstall and delete installation files (root permission required)

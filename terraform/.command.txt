@@ -49,9 +49,9 @@ export YC_FOLDER_ID=$(yc config get folder-id)
 yc compute image list --folder-id standard-images
 
 ssh 158.160.46.222
-ssh cloud-user@158.160.46.222
-ssh cloud-user@158.160.44.255
-ssh cloud-user@158.160.45.145
+ssh cloud-user@158.160.46.222     "vector" 
+ssh cloud-user@158.160.44.255    "lighthouse"
+ssh cloud-user@158.160.41.130  "clickhouse"
 
 "clickhouse" = tolist([    "158.160.45.145",
   ])
