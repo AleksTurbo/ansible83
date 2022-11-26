@@ -1,0 +1,5 @@
+yc_cloud_id              = "b1gk0tcpmdt9lhdnsjrl"
+yc_folder_id             = "b1g1qalus625i26qmq56"
+yc_zone                  = "ru-central1-a"
+service_account_key_file = "/home/aleksturbo/.yd/key.json"
+metadata_file            = "/home/aleksturbo/.yd/metadata.txt"

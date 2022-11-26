@@ -1,31 +1,54 @@
 provider "yandex" {
-  service_account_key_file = "key.json"
-  zone                     = "ru-central1-a"
-  cloud_id                 = "${var.yandex_cloud_id}"
-  folder_id                = "${var.yandex_folder_id}"
-
+  service_account_key_file = var.service_account_key_file
+  cloud_id                 = var.yc_cloud_id
+  folder_id                = var.yc_folder_id
+  zone                     = var.yc_zone
 }
 
-resource "yandex_iam_service_account" "sa" {
-  name = "aleksturbo"
+data "yandex_compute_image" "centos" {
+  family = "centos-stream-8"
 }
 
-// Назначение роли сервисному аккаунту
-resource "yandex_resourcemanager_folder_iam_member" "sa-editor" {
-  folder_id = "${var.yandex_folder_id}"
-  role      = "storage.editor"
-  member    = "serviceAccount:${yandex_iam_service_account.sa.id}"
+locals {
+  vm_image_map = data.yandex_compute_image.centos.id
+  vm_name      = toset(["clickhouse", "vector", "lighthouse"])
 }
 
-// Создание статического ключа доступа
-resource "yandex_iam_service_account_static_access_key" "sa-static-key" {
-  service_account_id = yandex_iam_service_account.sa.id
-  description        = "static access key for object storage"
-}
 
-// Создание бакета с использованием ключа
-resource "yandex_storage_bucket" "test" {
-  access_key = yandex_iam_service_account_static_access_key.sa-static-key.access_key
-  secret_key = yandex_iam_service_account_static_access_key.sa-static-key.secret_key
-  bucket     = "netology"
+resource "yandex_compute_instance" "vm" {
+  for_each    = local.vm_name
+  name        = "${each.key}-01"
+  hostname    = "${each.value}-01.local"
+  platform_id = "standard-v1"
+  description = "Srv-${each.value}"
+
+  resources {
+    cores  = 2
+    memory = 4
+  }
+
+
+  boot_disk {
+    initialize_params {
+      image_id = local.vm_image_map
+      type     = "network-hdd"
+      size     = 20
+    }
+  }
+
+
+  network_interface {
+    subnet_id = yandex_vpc_subnet.vpcsubnet.id
+    nat       = true
+    ipv6      = false
+  }
+
+
+  metadata = {
+        ssh-keys = "centos:${file("~/.ssh/id_rsa.pub")}"
+
+  }
+
+
+
 }

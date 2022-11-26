@@ -1,14 +1,7 @@
-output "yandex_zone" {
-  value       = yandex_compute_instance.vm.zone
-  description = "Yandex-zone in which the instance was created"
+output "internal_ip" {
+  value = { for k, v in yandex_compute_instance.vm : k => v.network_interface[*].ip_address }
 }
 
-output "yandex_ip_private" {
-  value       = yandex_compute_instance.vm.network_interface.0.ip_address
-  description = "Private IP on Yandex-cloud"
-}
-
-output "yandex_vpc_subnet" {
-  value       = resource.yandex_vpc_subnet.subnet.id
-  description = "Subnet ID where the instance was created"
+output "nat_ip" {
+  value = { for k, v in yandex_compute_instance.vm : k => v.network_interface[*].nat_ip_address }
 }
